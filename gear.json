@@ -1,0 +1,81 @@
+{
+  "items": [
+    {
+      "name": "Biker Jacket",
+      "gearID": 1000,
+      "healthAdded": 20,
+      "damageAdded": 0,
+      "iconUrls": ""
+    },
+    {
+      "name": "Metal Armor",
+      "gearID": 1010,
+      "healthAdded": 50,
+      "damageAdded": 0,
+      "iconUrls": ""
+    },
+    {
+      "name": "HTML Armor",
+      "gearID": 1020,
+      "healthAdded": 100,
+      "damageAdded": 0,
+      "iconUrls": ""
+    },
+    {
+      "name": "CSS Armor",
+      "gearID": 1030,
+      "healthAdded": 125,
+      "damageAdded": 0,
+      "iconUrls": ""
+    },
+    {
+      "name": "JavaScript Armor",
+      "gearID": 1040,
+      "healthAdded": 175,
+      "damageAdded": 0,
+      "iconUrls": ""
+    },
+    {
+      "name": "Rusty Spoon",
+      "gearID": 2000,
+      "healthAdded": 0,
+      "damageAdded": 20,
+      "iconUrls": ""
+    },
+    {
+      "name": "Socket Wrench",
+      "gearID": 2010,
+      "healthAdded": 0,
+      "damageAdded": 50,
+      "iconUrls": ""
+    },
+    {
+      "name": "HTML Hammer",
+      "gearID": 2020,
+      "healthAdded": 0,
+      "damageAdded": 100,
+      "iconUrls": ""
+    },
+    {
+      "name": "CSS Crossbow",
+      "gearID": 2030,
+      "healthAdded": 0,
+      "damageAdded": 125,
+      "iconUrls": ""
+    },
+    {
+      "name": "JavaScript Javelin",
+      "gearID": 2040,
+      "healthAdded": 0,
+      "damageAdded": 175,
+      "iconUrls": ""
+    },
+    {
+      "name": "Basic Charm",
+      "gearID": 3000,
+      "healthAdded": 50,
+      "damageAdded": 50,
+      "iconUrls": ""
+    }
+  ]
+}

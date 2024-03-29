@@ -1,0 +1,30 @@
+id,Question,Answer 1,Answer 2,Answer 3,Answer 4,Correct Answer,Difficulty,Unit,Points
+0,What is the purpose of a variable in programming?,To store a value that can change over time,To perform mathematical operations,To display output to the user,To control the flow of the program,1,Easy,Variables,1
+1,Which of the following is a valid variable name in Python?,1st_name,first-name,first_name,First Name,3,Easy,Variables,1
+2,What is the output of the following code snippet?\nprint(2 ** 3),6,8,9,5,2,Medium,Operators,2
+3,Which data type would be best to use for storing a person's age?,String,Float,Integer,Boolean,3,Easy,Data Types,1
+4,What does the following code print?\nif 5 > 2:\n    print('Five is greater than two!'),True,False,Five is greater than two!,Error,3,Easy,Control Structures,1
+5,What is the result of 10 % 3?,1,2,3,0,1,Medium,Operators,2
+6,Which of the following is a boolean data type?,True,False,Integer,String,1,Easy,Data Types,1
+7,What does the '==' operator check?,Assignment,Equality,Addition,Subtraction,2,Easy,Operators,1
+8,What will be the output of the following code?\nprint('Hello' + ' ' + 'World'),Hello World,HelloWorld,Error,None of the above,1,Easy,Strings,1
+9,Which loop structure is used to iterate a specific number of times?,For loop,While loop,Do-while loop,None of the above,1,Medium,Control Structures,2
+10,What is the output of the following code?\nprint(len('AP CSP')),5,6,7,8,2,Easy,Strings,1
+11,What is the purpose of an array?,To store multiple values in a single variable,To perform complex mathematical operations,To control the flow of a program,To display output to the user,1,Medium,Data Structures,2
+12,Which of the following is a syntax error?,Missing a semicolon,Using an undeclared variable,Dividing by zero,All of the above,1,Easy,Errors,1
+13,What is the output of the following code?\nprint(9 // 2),4.5,4,5,Error,2,Medium,Operators,2
+14,What does a function return if it does not have a return statement?,Null,0,An empty string,Undefined,4,Medium,Functions,2
+15,What is the scope of a variable declared inside a function?,Local scope,Global scope,Both local and global,None of the above,1,Medium,Variables,2
+16,What is the output of the following code?\nif 'a' < 'b':\n    print('a is less than b')\nelse:\n    print('a is not less than b'),a is less than b,a is not less than b,Error,None of the above,1,Easy,Control Structures,1
+17,Which data type is used to store a sequence of characters?,String,Integer,Boolean,Array,1,Easy,Data Types,1
+18,What is the output of the following code?\nprint(type(3.14)),<class 'int'>,<class 'float'>,<class 'str'>,<class 'bool'>,2,Easy,Data Types,1
+19,What is the purpose of the 'break' statement in a loop?,To exit the loop,To skip the current iteration,To continue the loop indefinitely,To restart the loop,1,Medium,Control Structures,2
+20,Which of the following is a logical operator?,+,*,and,/,3,Easy,Operators,1
+21,What is the purpose of a function in programming?,To store data,To repeat a block of code,To perform a specific task,To control the flow of the program,3,Medium,Functions,2
+22,What is the output of the following code?\nfor i in range(5):\n    print(i),0 1 2 3 4,1 2 3 4 5,0 1 2 3,1 2 3 4,1,Medium,Control Structures,2
+23,What is the result of '5' + '3'?,8,53,Error,None of the above,2,Easy,Strings,1
+24,Which of the following is used to create a comment in Python?,#,//,/* */,<!-- -->,1,Easy,Syntax,1
+25,What is the output of the following code?\nprint(10 > 9 and 5 < 4),True,False,Error,None of the above,2,Medium,Operators,2
+26,What is the correct syntax to define a function in Python?,def function_name():,function function_name():,function_name() = def,function_name def():,1,Easy,Functions,1
+27,What is the output of the following code?\nprint('AP' in 'AP CSP'),True,False,Error,None of the above,1,Easy,Strings,1
+28,What is the purpose of the 'return' statement in a function?,To exit the function,To send back a value from the function,To repeat the function,To check the validity of the function,2,Medium,Functions,2

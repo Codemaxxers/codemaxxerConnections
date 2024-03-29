@@ -1,0 +1,87 @@
+name: Update Branches
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+  push:
+    branches:
+      - master
+
+jobs:
+  update-branches:
+    runs-on: ubuntu-latest
+    steps:
+      # Set up GitHub CLI before its usage
+      - name: Set up GitHub CLI
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.1'
+      
+      - name: Install GitHub CLI
+        run: |
+          curl -sSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
+
+      # Authenticate GitHub CLI with GITHUB_TOKEN set as GH_TOKEN
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh auth setup-git
+
+      # Checkout master branch after GitHub CLI setup
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Update all branches
+        run: |
+          git fetch --all
+          failed_branches=""
+          for branch in $(git branch -r | grep -vE "origin/master$" | sed 's/origin\///'); do
+            echo "Creating pull request for branch $branch"
+            git checkout -b update-master-$branch origin/$branch
+            git reset --hard origin/$branch # Ensure branch is reset to origin's state
+            if ! git merge master --allow-unrelated-histories --no-ff; then
+              echo "Merge failed for branch $branch"
+              failed_branches+="$branch\n"
+              git merge --abort
+            else
+              # Try to rebase the branch to include any new commits from the remote branch
+              git pull --rebase origin $branch || echo "Note: Could not rebase $branch - manual check required"
+              # Attempt to push, using --force-with-lease to prevent overwriting others' work
+              if ! git push --force-with-lease origin update-master-$branch; then
+                echo "Push failed for branch $branch, may require manual intervention"
+              else
+                # Check for any differences before creating a pull request
+                if ! git diff --quiet origin/$branch update-master-$branch; then
+                  if ! GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr view --repo ${{ github.repository }} --ref update-master-$branch > /dev/null 2>&1; then
+                    GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr create --base $branch --head update-master-$branch --title "Update $branch from master" --body "This PR updates $branch with the latest changes from the master branch."
+                  else
+                    echo "Pull request already exists for branch $branch"
+                  fi
+                else
+                  echo "No changes to merge between $branch and update-master-$branch"
+                fi
+              fi
+            fi
+          done
+          echo -e "$failed_branches" > failed_branches.txt
+
+
+      - name: Report failed merges
+        if: always()
+        run: |
+          if [ -s failed_branches.txt ]; then
+            echo "The following branches could not be merged:"
+            cat failed_branches.txt
+          else
+            echo "All branches were updated successfully."
+          fi

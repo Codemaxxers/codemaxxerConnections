@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web:
+    image: java_springv1
+    build: .
+    ports:
+      - "8032:8032"
+    volumes:
+       - ./volumes:/volumes
+    restart: unless-stopped

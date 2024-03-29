@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/base}" lang="en">
+<link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+
+<head>
+    <title>Codemaxxer Linking Backend</title>
+</head>
+
+<body>
+<th:block layout:fragment="body" th:remove="tag">
+    <div class="px-5 py-5 mx-auto">
+        <h1><strong>Codemaxxer Backend!</strong></h1>
+        <div class="row">
+            <div class="col-4">
+                <div class="card">
+                    <img class="card-img-top" th:src="@{/images/wasd.jpeg}" alt="WASD Movement" height="250">
+                    <div class="card-body">
+                        <h5 class="card-title">WASD Movement</h5>
+                        <p class="card-text">
+                            Learn the basics of player movement using the WASD keys, a standard for navigating in many video games. I am hungry
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <img class="card-img-top" th:src="@{/images/tileset.png}" alt="Tileset Description" height="250">
+                    <div class="card-body">
+                        <h5 class="card-title">Tileset Overview</h5>
+                        <p class="card-text">
+                            Dive into the world of tilesets, essential for creating diverse and visually appealing game environments.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <img class="card-img-top" th:src="@{/images/crud.jpeg}" alt="CRUD Operations" height="250">
+                    <div class="card-body">
+                        <h5 class="card-title">CRUD Operations</h5>
+                        <p class="card-text">
+                            Understand the fundamentals of Create, Read, Update, and Delete operations in game development.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+
+</html>
