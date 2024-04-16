@@ -6,5 +6,5 @@ services:
     ports:
       - "8033:8033"
     volumes:
-       - ./volumes:/volumes
+       - ../data:/volumes
     restart: unless-stopped
