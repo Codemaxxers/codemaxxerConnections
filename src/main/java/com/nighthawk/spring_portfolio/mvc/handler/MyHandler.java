@@ -48,6 +48,20 @@ public class MyHandler extends TextWebSocketHandler {
                 e.printStackTrace();
             }
         });
+        commandMap.put("getplayerposition", (session, playerName) -> {
+            try {
+                handleGetPlayerPosition(session, playerName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        commandMap.put("getallplayerposition", (session, message) -> {
+            try {
+                handleGetAllPlayerPositions(session);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         // Add more commands and their corresponding methods here
     }
@@ -56,17 +70,19 @@ public class MyHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         log.info("Received message: {}", message.getPayload());
         String payload = message.getPayload();
-        String[] parts = payload.split(":", 2);
-        String command = parts[0];
-        String params = parts.length > 1 ? parts[1] : "";
+        int indexOfColon = payload.indexOf(':');
+        String command = payload.substring(0, indexOfColon != -1 ? indexOfColon : payload.length());
+        String params = indexOfColon != -1 ? payload.substring(indexOfColon + 1) : "";
 
         BiConsumer<WebSocketSession, String> handler = commandMap.get(command);
         if (handler != null) {
-            handler.accept(session, params);
+            handler.accept(session, params.trim());
         } else {
             session.sendMessage(new TextMessage("Unknown command: " + command));
         }
     }
+
+
 
     private void handleHello(WebSocketSession session, String params) throws IOException {
         session.sendMessage(new TextMessage("Hello, " + params));
@@ -100,7 +116,39 @@ public class MyHandler extends TextWebSocketHandler {
         // This function currently does nothing, but you can add logic as needed.
         log.warn("Processing position - Name: {}, X: {}, Y: {}", name, x, y);
     }
-    
 
+    private void handleGetPlayerPosition(WebSocketSession session, String playerName) throws IOException {
+        try {
+            // Log the request
+            log.info("Fetching position for player: {}", playerName);
+    
+            // Here you would typically retrieve the player's position from your data store
+            String position = "X: 100, Y: 200";  // This is an arbitrary position for demonstration
+    
+            // Send the response back to the client
+            session.sendMessage(new TextMessage("Position for " + playerName + ": " + position));
+        } catch (Exception e) {
+            log.error("Error fetching player position: ", e);
+            session.sendMessage(new TextMessage("Error fetching player position"));
+        }
+    }
+
+    private void handleGetAllPlayerPositions(WebSocketSession session) throws IOException {
+        try {
+            // Log the request
+            log.info("Fetching positions for all players");
+    
+            // Here you would typically retrieve all player positions from your data store
+            // For demonstration, we use arbitrary data
+            String positions = "Player1: X: 100, Y: 200; Player2: X: 150, Y: 250";
+    
+            // Send the response back to the client
+            session.sendMessage(new TextMessage("All Player Positions: " + positions));
+        } catch (Exception e) {
+            log.error("Error fetching all player positions: ", e);
+            session.sendMessage(new TextMessage("Error fetching all player positions"));
+        }
+    }
+    
     // Define other methods for different commands
 }
