@@ -77,18 +77,21 @@ public class MyHandler extends TextWebSocketHandler {
     }
 
     private void handlePlayerPosition(WebSocketSession session, String params) throws IOException {
-        // Assuming params are in the format "name=John;x=100;y=200"
-        Map<String, String> paramMap = Arrays.stream(params.split(";"))
-                                             .map(p -> p.split("="))
-                                             .collect(Collectors.toMap(p -> p[0], p -> p[1]));
-    
-        String name = paramMap.get("name");
-        String x = paramMap.get("x");
-        String y = paramMap.get("y");
-    
+        // Splitting the params on semicolon which are expected to be in the order: name, x, y
+        String[] parts = params.split(";");
+        if (parts.length < 3) {
+            // Not enough parts, handle error appropriately
+            session.sendMessage(new TextMessage("Invalid input format. Expecting 'name;x;y'."));
+            return;
+        }
+
+        String name = parts[0];
+        String x = parts[1];
+        String y = parts[2];
+
         // Now send these to a function that handles them
         processPlayerPosition(name, x, y);
-    
+
         // Optionally send a response back to the client
         session.sendMessage(new TextMessage("Position for " + name + " processed."));
     }
