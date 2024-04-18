@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 public class MyHandler extends TextWebSocketHandler {
@@ -37,6 +40,15 @@ public class MyHandler extends TextWebSocketHandler {
                 e.printStackTrace();
             }
         });
+
+        commandMap.put("playerposition", (session, message) -> {
+            try {
+                handlePlayerPosition(session, message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         // Add more commands and their corresponding methods here
     }
 
@@ -63,6 +75,29 @@ public class MyHandler extends TextWebSocketHandler {
     private void handleTest(WebSocketSession session, String params) throws IOException {
         session.sendMessage(new TextMessage("Testing: " + params));
     }
+
+    private void handlePlayerPosition(WebSocketSession session, String params) throws IOException {
+        // Assuming params are in the format "name=John;x=100;y=200"
+        Map<String, String> paramMap = Arrays.stream(params.split(";"))
+                                             .map(p -> p.split("="))
+                                             .collect(Collectors.toMap(p -> p[0], p -> p[1]));
+    
+        String name = paramMap.get("name");
+        String x = paramMap.get("x");
+        String y = paramMap.get("y");
+    
+        // Now send these to a function that handles them
+        processPlayerPosition(name, x, y);
+    
+        // Optionally send a response back to the client
+        session.sendMessage(new TextMessage("Position for " + name + " processed."));
+    }
+    
+    private void processPlayerPosition(String name, String x, String y) {
+        // This function currently does nothing, but you can add logic as needed.
+        log.warn("Processing position - Name: {}, X: {}, Y: {}", name, x, y);
+    }
+    
 
     // Define other methods for different commands
 }
