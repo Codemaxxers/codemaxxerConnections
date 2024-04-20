@@ -68,7 +68,7 @@ public class MyHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
-        log.info("Received message: {}", message.getPayload());
+        log.warn("Received message: {}", message.getPayload());
         String payload = message.getPayload();
         int indexOfColon = payload.indexOf(':');
         String command = payload.substring(0, indexOfColon != -1 ? indexOfColon : payload.length());
@@ -120,7 +120,7 @@ public class MyHandler extends TextWebSocketHandler {
     private void handleGetPlayerPosition(WebSocketSession session, String playerName) throws IOException {
         try {
             // Log the request
-            log.info("Fetching position for player: {}", playerName);
+            log.warn("Fetching position for player: {}", playerName);
     
             // Here you would typically retrieve the player's position from your data store
             String position = "X: 100, Y: 200";  // This is an arbitrary position for demonstration
@@ -136,7 +136,7 @@ public class MyHandler extends TextWebSocketHandler {
     private void handleGetAllPlayerPositions(WebSocketSession session) throws IOException {
         try {
             // Log the request
-            log.info("Fetching positions for all players");
+            log.warn("Fetching positions for all players");
     
             // Here you would typically retrieve all player positions from your data store
             // For demonstration, we use arbitrary data
