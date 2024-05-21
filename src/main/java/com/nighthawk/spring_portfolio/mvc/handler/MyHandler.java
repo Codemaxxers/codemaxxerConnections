@@ -3,7 +3,6 @@ package com.nighthawk.spring_portfolio.mvc.handler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
@@ -15,37 +14,52 @@ import java.util.function.BiConsumer;
 @Slf4j
 public class MyHandler extends TextWebSocketHandler {
 
+    private final LobbyManager lobbyManager = new LobbyManager();
     @Getter
-    private Map<String, Player> players = new HashMap<>();
-    private Map<String, BiConsumer<WebSocketSession, String>> commandMap = new HashMap<>();
+    private final Map<String, Player> players = new HashMap<>();
+    private final Map<String, BiConsumer<WebSocketSession, String>> commandMap = new HashMap<>();
 
     public MyHandler() {
-        commandMap.put("hello", (session, params) -> {
+        commandMap.put("hello", (t, u) -> {
             try {
-                handleHello(session, params);
+                handleHello(t, u);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-        commandMap.put("register", (session, params) -> {
+        commandMap.put("register", (t, u) -> {
             try {
-                handleRegister(session, params);
+                handleRegister(t, u);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-        commandMap.put("attack", (session, params) -> {
+        commandMap.put("attack", (t, u) -> {
             try {
-                handleAttack(session, params);
+                handleAttack(t, u);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-
-        // Add more commands and their corresponding methods here
+        commandMap.put("createLobby", (t, u) -> {
+            try {
+                handleCreateLobby(t, u);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
+        commandMap.put("joinLobby", (t, u) -> {
+            try {
+                handleJoinLobby(t, u);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -69,7 +83,6 @@ public class MyHandler extends TextWebSocketHandler {
     }
 
     private void handleRegister(WebSocketSession session, String params) throws IOException {
-        // Expected params format: "playerName;attack;health"
         String[] parts = params.split(";");
         if (parts.length < 3) {
             session.sendMessage(new TextMessage("Invalid input format. Expecting 'playerName;attack;health'."));
@@ -85,7 +98,6 @@ public class MyHandler extends TextWebSocketHandler {
     }
 
     private void handleAttack(WebSocketSession session, String params) throws IOException {
-        // Expected params format: "attackerName;targetName"
         String[] parts = params.split(";");
         if (parts.length < 2) {
             session.sendMessage(new TextMessage("Invalid input format. Expecting 'attackerName;targetName'."));
@@ -108,22 +120,41 @@ public class MyHandler extends TextWebSocketHandler {
         target.getSession().sendMessage(new TextMessage("You were attacked by " + attackerName + ". Your new Health: " + target.getHealth()));
     }
 
-    @Getter
-    public static class Player {
-        private String name;
-        private int attack;
-        private int health;
-        private WebSocketSession session;
+    private void handleCreateLobby(WebSocketSession session, String params) throws IOException {
+        String lobbyId = params.trim();
+        lobbyManager.createLobby(lobbyId);
+        session.sendMessage(new TextMessage("Lobby " + lobbyId + " created."));
+    }
 
-        public Player(String name, int attack, int health, WebSocketSession session) {
-            this.name = name;
-            this.attack = attack;
-            this.health = health;
-            this.session = session;
+    private void handleJoinLobby(WebSocketSession session, String params) throws IOException {
+        String[] parts = params.split(";");
+        if (parts.length < 2) {
+            session.sendMessage(new TextMessage("Invalid input format. Expecting 'lobbyId;playerName'."));
+            return;
         }
 
-        public void setHealth(int health) {
-            this.health = health;
+        String lobbyId = parts[0];
+        String playerName = parts[1];
+        Player player = players.get(playerName);
+
+        if (player == null) {
+            session.sendMessage(new TextMessage("Player " + playerName + " not found."));
+            return;
         }
+
+        LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
+        if (lobby == null) {
+            session.sendMessage(new TextMessage("Lobby " + lobbyId + " not found."));
+            return;
+        }
+
+        if (lobby.isFull()) {
+            session.sendMessage(new TextMessage("Lobby " + lobbyId + " is full."));
+            return;
+        }
+
+        lobby.addPlayer(player);
+        session.sendMessage(new TextMessage("Player " + playerName + " joined lobby " + lobbyId + "."));
+        player.getSession().sendMessage(new TextMessage("You joined lobby " + lobbyId + "."));
     }
 }
