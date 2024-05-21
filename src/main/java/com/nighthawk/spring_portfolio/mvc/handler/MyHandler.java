@@ -8,57 +8,39 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 
 @Slf4j
 public class MyHandler extends TextWebSocketHandler {
+
     @Getter
-    private List<WebSocketSession> list = new ArrayList<>();
+    private Map<String, Player> players = new HashMap<>();
     private Map<String, BiConsumer<WebSocketSession, String>> commandMap = new HashMap<>();
 
     public MyHandler() {
-        commandMap.put("hello", (t, u) -> {
+        commandMap.put("hello", (session, params) -> {
             try {
-                handleHello(t, u);
+                handleHello(session, params);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-        commandMap.put("test", (t, u) -> {
+        commandMap.put("register", (session, params) -> {
             try {
-                handleTest(t, u);
+                handleRegister(session, params);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-
-        commandMap.put("playerposition", (session, message) -> {
+        commandMap.put("attack", (session, params) -> {
             try {
-                handlePlayerPosition(session, message);
+                handleAttack(session, params);
             } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        commandMap.put("getplayerposition", (session, playerName) -> {
-            try {
-                handleGetPlayerPosition(session, playerName);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        commandMap.put("getallplayerposition", (session, message) -> {
-            try {
-                handleGetAllPlayerPositions(session);
-            } catch (IOException e) {
+                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
@@ -82,73 +64,66 @@ public class MyHandler extends TextWebSocketHandler {
         }
     }
 
-
-
     private void handleHello(WebSocketSession session, String params) throws IOException {
         session.sendMessage(new TextMessage("Hello, " + params));
     }
 
-    private void handleTest(WebSocketSession session, String params) throws IOException {
-        session.sendMessage(new TextMessage("Testing: " + params));
-    }
-
-    private void handlePlayerPosition(WebSocketSession session, String params) throws IOException {
-        // Splitting the params on semicolon which are expected to be in the order: name, x, y
+    private void handleRegister(WebSocketSession session, String params) throws IOException {
+        // Expected params format: "playerName;attack;health"
         String[] parts = params.split(";");
         if (parts.length < 3) {
-            // Not enough parts, handle error appropriately
-            session.sendMessage(new TextMessage("Invalid input format. Expecting 'name;x;y'."));
+            session.sendMessage(new TextMessage("Invalid input format. Expecting 'playerName;attack;health'."));
             return;
         }
 
-        String name = parts[0];
-        String x = parts[1];
-        String y = parts[2];
+        String playerName = parts[0];
+        int attack = Integer.parseInt(parts[1]);
+        int health = Integer.parseInt(parts[2]);
 
-        // Now send these to a function that handles them
-        processPlayerPosition(name, x, y);
-
-        // Optionally send a response back to the client
-        session.sendMessage(new TextMessage("Position for " + name + " processed."));
-    }
-    
-    private void processPlayerPosition(String name, String x, String y) {
-        // This function currently does nothing, but you can add logic as needed.
-        log.warn("Processing position - Name: {}, X: {}, Y: {}", name, x, y);
+        players.put(playerName, new Player(playerName, attack, health, session));
+        session.sendMessage(new TextMessage("Player " + playerName + " registered with Attack: " + attack + ", Health: " + health));
     }
 
-    private void handleGetPlayerPosition(WebSocketSession session, String playerName) throws IOException {
-        try {
-            // Log the request
-            log.warn("Fetching position for player: {}", playerName);
-    
-            // Here you would typically retrieve the player's position from your data store
-            String position = "X: 100, Y: 200";  // This is an arbitrary position for demonstration
-    
-            // Send the response back to the client
-            session.sendMessage(new TextMessage("Position for " + playerName + ": " + position));
-        } catch (Exception e) {
-            log.error("Error fetching player position: ", e);
-            session.sendMessage(new TextMessage("Error fetching player position"));
+    private void handleAttack(WebSocketSession session, String params) throws IOException {
+        // Expected params format: "attackerName;targetName"
+        String[] parts = params.split(";");
+        if (parts.length < 2) {
+            session.sendMessage(new TextMessage("Invalid input format. Expecting 'attackerName;targetName'."));
+            return;
+        }
+
+        String attackerName = parts[0];
+        String targetName = parts[1];
+
+        Player attacker = players.get(attackerName);
+        Player target = players.get(targetName);
+
+        if (attacker == null || target == null) {
+            session.sendMessage(new TextMessage("Invalid player names."));
+            return;
+        }
+
+        target.setHealth(target.getHealth() - attacker.getAttack());
+        session.sendMessage(new TextMessage("Player " + targetName + " was attacked by " + attackerName + ". New Health: " + target.getHealth()));
+        target.getSession().sendMessage(new TextMessage("You were attacked by " + attackerName + ". Your new Health: " + target.getHealth()));
+    }
+
+    @Getter
+    public static class Player {
+        private String name;
+        private int attack;
+        private int health;
+        private WebSocketSession session;
+
+        public Player(String name, int attack, int health, WebSocketSession session) {
+            this.name = name;
+            this.attack = attack;
+            this.health = health;
+            this.session = session;
+        }
+
+        public void setHealth(int health) {
+            this.health = health;
         }
     }
-
-    private void handleGetAllPlayerPositions(WebSocketSession session) throws IOException {
-        try {
-            // Log the request
-            log.warn("Fetching positions for all players");
-    
-            // Here you would typically retrieve all player positions from your data store
-            // For demonstration, we use arbitrary data
-            String positions = "Player1: X: 100, Y: 200; Player2: X: 150, Y: 250";
-    
-            // Send the response back to the client
-            session.sendMessage(new TextMessage("All Player Positions: " + positions));
-        } catch (Exception e) {
-            log.error("Error fetching all player positions: ", e);
-            session.sendMessage(new TextMessage("Error fetching all player positions"));
-        }
-    }
-    
-    // Define other methods for different commands
 }
