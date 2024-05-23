@@ -1,37 +1,47 @@
 package com.nighthawk.spring_portfolio.mvc.handler;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class MyHandler extends TextWebSocketHandler {
 
-    private final Map<String, BiConsumer<WebSocketSession, String>> commandMap = new HashMap<>();
+    @Getter
+    private Map<String, Player> players = new HashMap<>();
+    private Map<String, BiConsumer<WebSocketSession, String>> commandMap = new HashMap<>();
+
     private final LobbyManager lobbyManager;
 
     public MyHandler(LobbyManager lobbyManager) {
         this.lobbyManager = lobbyManager;
-        commandMap.put("hello", (t, u) -> {
+
+        commandMap.put("hello", (session, params) -> {
             try {
-                handleHello(t, u);
+                handleHello(session, params);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         });
-        commandMap.put("attack", (t, u) -> {
+        commandMap.put("register", (session, params) -> {
             try {
-                handleAttack(t, u);
+                handleRegister(session, params);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
+        commandMap.put("attack", (session, params) -> {
+            try {
+                handleAttack(session, params);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -57,7 +67,33 @@ public class MyHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage("Hello, " + params));
     }
 
+    private void handleRegister(WebSocketSession session, String params) throws IOException {
+        // Expected params format: "playerName;lobbyId;attack;health"
+        String[] parts = params.split(";");
+        if (parts.length < 4) {
+            session.sendMessage(new TextMessage("Invalid input format. Expecting 'playerName;lobbyId;attack;health'."));
+            return;
+        }
+
+        String playerName = parts[0];
+        String lobbyId = parts[1];
+        int attack = Integer.parseInt(parts[2]);
+        int health = Integer.parseInt(parts[3]);
+
+        Player player = new Player(playerName, attack, health, session);
+        players.put(playerName, player);
+        
+        LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
+        if (lobby != null) {
+            lobby.addPlayer(player);
+            session.sendMessage(new TextMessage("Player " + playerName + " registered with Attack: " + attack + ", Health: " + health + " and joined lobby " + lobbyId));
+        } else {
+            session.sendMessage(new TextMessage("Lobby " + lobbyId + " does not exist."));
+        }
+    }
+
     private void handleAttack(WebSocketSession session, String params) throws IOException {
+        // Expected params format: "attackerName;targetName"
         String[] parts = params.split(";");
         if (parts.length < 2) {
             session.sendMessage(new TextMessage("Invalid input format. Expecting 'attackerName;targetName'."));
@@ -67,8 +103,8 @@ public class MyHandler extends TextWebSocketHandler {
         String attackerName = parts[0];
         String targetName = parts[1];
 
-        Player attacker = lobbyManager.getPlayer(attackerName);
-        Player target = lobbyManager.getPlayer(targetName);
+        Player attacker = players.get(attackerName);
+        Player target = players.get(targetName);
 
         if (attacker == null || target == null) {
             session.sendMessage(new TextMessage("Invalid player names."));
