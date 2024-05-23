@@ -1,16 +1,18 @@
 package com.nighthawk.spring_portfolio.mvc.handler;
 
-import lombok.Getter;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import lombok.Getter;
+
 @Component
 public class LobbyManager {
     @Getter
     private final Map<String, Lobby> lobbies = new HashMap<>();
+    @Getter
+    private final Map<String, Player> players = new HashMap<>();
 
     public void createLobby(String lobbyId) {
         lobbies.put(lobbyId, new Lobby(lobbyId));
@@ -22,6 +24,14 @@ public class LobbyManager {
 
     public void removeLobby(String lobbyId) {
         lobbies.remove(lobbyId);
+    }
+
+    public void registerPlayer(Player player) {
+        players.put(player.getName(), player);
+    }
+
+    public Player getPlayer(String playerName) {
+        return players.get(playerName);
     }
 
     @Getter
