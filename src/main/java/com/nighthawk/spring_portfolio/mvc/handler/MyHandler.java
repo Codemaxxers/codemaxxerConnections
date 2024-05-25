@@ -79,28 +79,35 @@ public class MyHandler extends TextWebSocketHandler {
         // Expected params format: "playerName;lobbyId"
         String[] parts = params.split(";");
         if (parts.length < 2) {
-            session.sendMessage(new TextMessage("Invalid input format. Expecting 'playerName;lobbyId'."));
-            return;
+          session.sendMessage(new TextMessage("Invalid input format. Expecting 'playerName;lobbyId'."));
+          return;
         }
-
+      
         String playerName = parts[0];
         String lobbyId = parts[1];
-
+      
         LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
         if (lobby == null) {
-            session.sendMessage(new TextMessage("Lobby " + lobbyId + " does not exist."));
-            return;
+          session.sendMessage(new TextMessage("Lobby " + lobbyId + " does not exist."));
+          return;
         }
-
+      
         Player player = players.get(playerName);
         if (player == null) {
-            session.sendMessage(new TextMessage("Player " + playerName + " not registered."));
-            return;
+          session.sendMessage(new TextMessage("Player " + playerName + " not registered."));
+          return;
         }
-
+      
+        // Check if the retrieved player's session matches the current session
+        if (player.getSession() != session) {
+          session.sendMessage(new TextMessage("Player " + playerName + " already connected from a different session."));
+          return;
+        }
+      
         player.setSession(session);
         session.sendMessage(new TextMessage("Connected to lobby " + lobbyId + " as " + playerName));
-    }
+      }
+      
 
     private void handleRegister(WebSocketSession session, String params) throws IOException {
         // Expected params format: "playerName;lobbyId;attack;health"
