@@ -15,12 +15,12 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
-        webSocketHandlerRegistry.addHandler(myHandler(), "/myhandler");
+        webSocketHandlerRegistry.addHandler(myHandler(), "/myhandler")
+                .setAllowedOrigins("*"); // Allow all origins, adjust for security in production
     }
 
     @Bean
     public WebSocketHandler myHandler() {
         return new MyHandler(null);
     }
-
 }
