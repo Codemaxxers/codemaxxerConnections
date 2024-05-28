@@ -12,7 +12,7 @@ public class LobbyManager {
     @Getter
     private final Map<String, Lobby> lobbies = new HashMap<>();
     @Getter
-    private final Map<String, Player> players = new HashMap<>();
+    private final Map<String, Player> players = new HashMap<>(); // Global map for all players
 
     public void createLobby(String lobbyId) {
         lobbies.put(lobbyId, new Lobby(lobbyId));
@@ -23,7 +23,10 @@ public class LobbyManager {
     }
 
     public void removeLobby(String lobbyId) {
-        lobbies.remove(lobbyId);
+        Lobby lobby = lobbies.remove(lobbyId);
+        if (lobby != null) {
+            lobby.getPlayers().forEach((name, player) -> players.remove(name));
+        }
     }
 
     public void registerPlayer(Player player) {

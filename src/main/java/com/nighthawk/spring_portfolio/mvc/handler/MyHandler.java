@@ -97,16 +97,7 @@ public class MyHandler extends TextWebSocketHandler {
           session.sendMessage(new TextMessage("Player " + playerName + " not registered."));
           return;
         }
-      
-        // Check if the retrieved player's session matches the current session
-        if (player.getSession() != session) {
-          session.sendMessage(new TextMessage("Player " + playerName + " already connected from a different session."));
-          return;
-        }
-      
-        player.setSession(session);
-        session.sendMessage(new TextMessage("Connected to lobby " + lobbyId + " as " + playerName));
-      }
+    }
       
 
     private void handleRegister(WebSocketSession session, String params) throws IOException {
@@ -122,7 +113,7 @@ public class MyHandler extends TextWebSocketHandler {
         int attack = Integer.parseInt(parts[2]);
         int health = Integer.parseInt(parts[3]);
 
-        Player player = new Player(playerName, attack, health, session);
+        Player player = new Player(playerName, attack, health);
         players.put(playerName, player);
         
         LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
@@ -155,6 +146,5 @@ public class MyHandler extends TextWebSocketHandler {
 
         target.setHealth(target.getHealth() - attacker.getAttack());
         session.sendMessage(new TextMessage("Player " + targetName + " was attacked by " + attackerName + ". New Health: " + target.getHealth()));
-        target.getSession().sendMessage(new TextMessage("You were attacked by " + attackerName + ". Your new Health: " + target.getHealth()));
     }
 }

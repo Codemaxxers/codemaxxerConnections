@@ -27,7 +27,8 @@ public class LobbyController {
 
     @PostMapping("/registerAndJoin")
     public String registerAndJoin(@RequestParam String lobbyId, @RequestParam String playerName, @RequestParam int attack, @RequestParam int health) {
-        Player player = new Player(playerName, attack, health, null); // WebSocket session will be set later
+        int adjustedHealth = (int) (health * 1.5);
+        Player player = new Player(playerName, attack, adjustedHealth);
         lobbyManager.registerPlayer(player);
 
         LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
@@ -40,8 +41,9 @@ public class LobbyController {
         }
 
         lobby.addPlayer(player);
-        return "Player " + playerName + " registered with Attack: " + attack + ", Health: " + health + " and joined lobby " + lobbyId;
+        return "Player " + playerName + " registered with Attack: " + attack + ", Health: " + adjustedHealth + " and joined lobby " + lobbyId;
     }
+
 
     @GetMapping("/list")
     public Map<String, LobbyManager.Lobby> listLobbies() {
@@ -52,5 +54,23 @@ public class LobbyController {
     public String removeLobby(@RequestParam String lobbyId) {
         lobbyManager.removeLobby(lobbyId);
         return "Lobby " + lobbyId + " removed.";
+    }
+
+    @PostMapping("/attack")
+    public String attack(@RequestParam String attackerName, @RequestParam String targetName) {
+        Player attacker = lobbyManager.getPlayer(attackerName);
+        Player target = lobbyManager.getPlayer(targetName);
+
+        if (attacker == null || target == null) {
+            return "Invalid player names.";
+        }
+
+        target.setHealth(target.getHealth() - attacker.getAttack());
+
+        if (target.getHealth() <= 0) {
+            return "Player " + targetName + " was attacked by " + attackerName + ". Player " + targetName + " has been defeated.";
+        }
+
+        return "Player " + targetName + " was attacked by " + attackerName + ". New Health: " + target.getHealth();
     }
 }
