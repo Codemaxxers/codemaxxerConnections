@@ -144,9 +144,6 @@ public class LobbyController {
         }
     }
 
-
-
-
     @PostMapping("/removeLobby")
     public String removeLobby(@RequestParam String lobbyId) {
         lobbyManager.removeLobby(lobbyId);
