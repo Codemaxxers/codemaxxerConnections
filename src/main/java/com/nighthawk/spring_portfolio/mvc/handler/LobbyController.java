@@ -1,5 +1,6 @@
 package com.nighthawk.spring_portfolio.mvc.handler;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,9 +21,20 @@ public class LobbyController {
     }
 
     @PostMapping("/createLobby")
-    public String createLobby(@RequestParam String lobbyId) {
+    public String createLobby() {
+        String lobbyId;
+        do {
+            lobbyId = generateUniqueLobbyId();
+        } while (lobbyManager.getLobby(lobbyId) != null);
+    
         lobbyManager.createLobby(lobbyId);
         return "Lobby " + lobbyId + " created.";
+    }
+    
+    private String generateUniqueLobbyId() {
+        // Generate a random lobby ID, for example, a 6-digit number.
+        int id = (int)(Math.random() * 1000000);
+        return String.format("%06d", id);
     }
 
     @PostMapping("/registerAndJoin")
@@ -45,10 +57,26 @@ public class LobbyController {
     }
 
 
-    @GetMapping("/list")
+    @GetMapping("/getLobbies")
     public Map<String, LobbyManager.Lobby> listLobbies() {
         return lobbyManager.getLobbies();
     }
+
+    @GetMapping("/availableLobbies")
+    public Map<String, LobbyManager.Lobby> getAvailableLobbies() {
+        Map<String, LobbyManager.Lobby> availableLobbies = new HashMap<>();
+        Map<String, LobbyManager.Lobby> allLobbies = lobbyManager.getLobbies();
+
+        for (Map.Entry<String, LobbyManager.Lobby> entry : allLobbies.entrySet()) {
+            LobbyManager.Lobby lobby = entry.getValue();
+            if (!lobby.isFull()) {
+                availableLobbies.put(entry.getKey(), lobby);
+            }
+        }
+
+        return availableLobbies;
+    }
+
 
     @DeleteMapping("/removeLobby")
     public String removeLobby(@RequestParam String lobbyId) {
