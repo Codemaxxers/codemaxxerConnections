@@ -3,7 +3,8 @@ package com.nighthawk.spring_portfolio.mvc.handler;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +58,7 @@ public class LobbyController {
     }
 
 
-    @GetMapping("/getLobbies")
+    @GetMapping("/allLobbies")
     public Map<String, LobbyManager.Lobby> listLobbies() {
         return lobbyManager.getLobbies();
     }
@@ -77,8 +78,24 @@ public class LobbyController {
         return availableLobbies;
     }
 
+    @GetMapping("/checkIfLobbyIsFull")
+    public ResponseEntity<Map<String, Object>> checkIfLobbyIsFull(@RequestParam String lobbyId) {
+        Map<String, Object> response = new HashMap<>();
+        LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
+        if (lobby == null) {
+            response.put("error", "Lobby " + lobbyId + " does not exist.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } else {
+            response.put("lobbyId", lobbyId);
+            response.put("isFull", lobby.isFull());
+            return ResponseEntity.ok(response);
+        }
+    }
 
-    @DeleteMapping("/removeLobby")
+
+
+
+    @PostMapping("/removeLobby")
     public String removeLobby(@RequestParam String lobbyId) {
         lobbyManager.removeLobby(lobbyId);
         return "Lobby " + lobbyId + " removed.";
