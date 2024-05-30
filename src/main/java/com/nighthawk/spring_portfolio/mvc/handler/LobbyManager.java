@@ -38,12 +38,22 @@ public class LobbyManager {
     }
 
     @Getter
-    public static class Lobby {
+    public  class Lobby {
         private final String id;
         private final Map<String, Player> players = new HashMap<>();
 
         public Lobby(String id) {
             this.id = id;
+        }
+
+        private String currentPlayer;
+
+        public String getCurrentPlayer() {
+            return currentPlayer;
+        }
+    
+        public void setCurrentPlayer(String currentPlayer) {
+            this.currentPlayer = currentPlayer;
         }
 
         public void addPlayer(Player player) {

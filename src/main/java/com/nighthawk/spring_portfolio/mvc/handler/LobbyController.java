@@ -93,42 +93,53 @@ public class LobbyController {
     }
 
     @GetMapping("/lobbyInfo")
-    public ResponseEntity<Map<String, Object>> lobbyInfo(@RequestParam String lobbyId, @RequestParam String type, @RequestParam String player, @RequestParam String target) {
-        Map<String, Object> response = new HashMap<>();
-        LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
-        if (lobby == null) {
-            response.put("error", "Lobby " + lobbyId + " does not exist.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+public ResponseEntity<Map<String, Object>> lobbyInfo(
+        @RequestParam String lobbyId, 
+        @RequestParam String type, 
+        @RequestParam String player, 
+        @RequestParam String target, 
+        @RequestParam String lastCurrentPlayer) {
+
+    Map<String, Object> response = new HashMap<>();
+    LobbyManager.Lobby lobby = lobbyManager.getLobby(lobbyId);
+
+    if (lobby == null) {
+        response.put("error", "Lobby " + lobbyId + " does not exist.");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    } else {
+        // Get players and their health
+        Map<String, Integer> playerHealth = new HashMap<>();
+        lobby.getPlayers().forEach((playerName, playerData) ->
+            playerHealth.put(playerName, playerData.getHealth()));
+
+        String currentPlayer = null;
+
+        // Handle the case where the type is "turn" and set currentPlayer to target
+        if ("turn".equals(type)) {
+            currentPlayer = target;
+        } else if ("initial".equals(type)) {
+            currentPlayer = playerHealth.entrySet().stream()
+                .min(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
         } else {
-            // Get players and their health
-            Map<String, Integer> playerHealth = new HashMap<>();
-            lobby.getPlayers().forEach((playerName, playerData) ->
-                playerHealth.put(playerName, playerData.getHealth()));
-
-            // Find player with lowest health initially
-            String currentPlayer = playerHealth.entrySet().stream()
-                    .min(Map.Entry.comparingByValue())
-                    .map(Map.Entry::getKey)
-                    .orElse(null);
-
-            // Handle the case where the type is "turn" and set currentPlayer is now switched to target
-            if ("turn".equals(type)) {
-                currentPlayer = target;
-            }
-
-            if (currentPlayer == null) {
-                response.put("error", "Unable to determine current player.");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-
-            response.put("lobbyId", lobbyId);
-            response.put("currentPlayer", currentPlayer);
-            response.put("players", lobby.getPlayers());
-            return ResponseEntity.ok(response);
+            currentPlayer = lobby.getCurrentPlayer(); // Retrieve last currentPlayer
         }
+
+        if (currentPlayer == null) {
+            response.put("error", "Unable to determine current player.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+
+        // Update the lobby's currentPlayer field
+        lobby.setCurrentPlayer(currentPlayer);
+
+        response.put("lobbyId", lobbyId);
+        response.put("currentPlayer", currentPlayer);
+        response.put("players", lobby.getPlayers());
+        return ResponseEntity.ok(response);
     }
-
-
+}
 
     @GetMapping("/lobbyInfoPerPlayer")
     public ResponseEntity<Map<String, Object>> lobbyInfoPerPlayer(@RequestParam String lobbyId, @RequestParam String playerName) {
